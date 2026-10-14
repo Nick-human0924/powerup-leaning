@@ -1,0 +1,2 @@
+import { authorizeRequest, compatibleProvider, apiError, ProviderError } from '@/lib/providers';
+export async function POST(request:Request){try{authorizeRequest(request);const {text,consent}=await request.json();if(consent!==true||typeof text!=='string'||text.length>2000)throw new ProviderError('请允许云端朗读，并提供有效文字',400);return new Response(await compatibleProvider.speak(text),{headers:{'Content-Type':'audio/mpeg','Cache-Control':'no-store'}});}catch(error){return apiError(error);}}

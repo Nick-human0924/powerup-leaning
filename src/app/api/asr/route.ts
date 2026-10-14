@@ -1,0 +1,3 @@
+import { authorizeRequest, compatibleProvider, apiError, ProviderError } from '@/lib/providers';
+export const runtime='nodejs';
+export async function POST(request:Request){try{authorizeRequest(request);if(Number(request.headers.get('content-length')||0)>25_000_000)throw new ProviderError('音频过大，限制25MB',413);const form=await request.formData();if(form.get('consent')!=='true')throw new ProviderError('请明确允许将这段音频交给配置的转写服务',403);const audio=form.get('audio');if(!(audio instanceof File)||audio.size>25_000_000||!audio.type.startsWith('audio/'))throw new ProviderError('请选择25MB以内的音频',400);return Response.json(await compatibleProvider.transcribe(audio),{headers:{'Cache-Control':'no-store'}});}catch(error){return apiError(error);}}

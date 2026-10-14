@@ -1,0 +1,37 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Download, FileJson, HardDrive, Trash2, Upload } from "lucide-react";
+import type { Snapshot } from "@/lib/schema";
+import { clearAll, deleteBlob, getBlob, mergeBackup, mutateSnapshot } from "@/lib/db";
+import { mastery } from "@/lib/domain";
+import type { Capabilities } from "./types";
+import { ProviderStatus } from "./ServiceStatus";
+import { EmptyState, Overline, SectionTitle, StatusPill } from "./ui";
+
+const outcomeLabel={independent:"独立说出",prompted:"提示后说出",miss:"暂时不会",not_tested:"未测",unverified:"待确认"} as const;
+function download(content:Blob,name:string){const url=URL.createObjectURL(content);const a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+
+export function RecordsView({snapshot,refresh,capabilities}:{snapshot:Snapshot;refresh:()=>Promise<void>;capabilities:Capabilities|null}){
+  const [quota,setQuota]=useState<{usage:number;quota:number}|null>(null),[message,setMessage]=useState(""),[confirmClear,setConfirmClear]=useState(false);
+  useEffect(()=>{void navigator.storage?.estimate().then(x=>setQuota({usage:x.usage??0,quota:x.quota??0}))},[snapshot]);
+  const now=Date.now(),weekAgo=now-7*86400000;const weekly=snapshot.observations.filter(o=>new Date(o.timestamp).getTime()>=weekAgo);const sessionIds=new Set(weekly.map(o=>o.practice_session_id).filter(Boolean));const seconds=snapshot.sessions.filter(s=>sessionIds.has(s.id)).reduce((a,s)=>a+(s.duration_seconds??0),0);
+  const independent=new Set(weekly.filter(o=>o.outcome==="independent").map(o=>o.skill_id));const prompted=new Set(weekly.filter(o=>o.outcome==="prompted").map(o=>o.skill_id));const misses=new Set(weekly.filter(o=>o.outcome==="miss").map(o=>o.skill_id));
+  const names=(ids:Set<string>)=>[...ids].map(id=>snapshot.skills.find(s=>s.id===id)?.title).filter(Boolean).join("、")||"暂无";
+  const exportData=()=>download(new Blob([JSON.stringify(snapshot,null,2)],{type:"application/json"}),`andy-learning-backup-${new Date().toISOString().slice(0,10)}.json`);
+  const importData=async(file?:File)=>{if(!file)return;setMessage("正在校验并合并备份…");try{await mergeBackup(JSON.parse(await file.text()));await refresh();setMessage("备份已合并。重复记录不会重复创建，现有学习历史已保留。") }catch(e){setMessage(`导入失败：${e instanceof Error?e.message:"文件格式无法识别"}`)}};
+  const removeObservation=async(id:string)=>{await mutateSnapshot(d=>{d.observations=d.observations.filter(o=>o.id!==id);d.notes.forEach(n=>{n.linked_observation_ids=n.linked_observation_ids.filter(x=>x!==id)});d.audit.push({id:crypto.randomUUID(),timestamp:new Date().toISOString(),action:"observation_deleted",entity_id:id,detail:"家长在记录页删除"})});await refresh()};
+  const removeNote=async(id:string)=>{await mutateSnapshot(d=>{d.notes=d.notes.filter(n=>n.id!==id);d.audio.forEach(a=>{if(a.note_id===id)a.note_id=undefined});d.audit.push({id:crypto.randomUUID(),timestamp:new Date().toISOString(),action:"parent_note_deleted",entity_id:id,detail:"家长删除原始反馈文字；已确认观察记录单独保留"})});await refresh()};
+  const audioAction=async(id:string,kind:"download"|"delete")=>{const row=snapshot.audio.find(a=>a.id===id);if(!row)return;if(kind==="download"){const blob=await getBlob(row.media_ref);if(blob)download(blob,`andy-audio-${row.created_at.slice(0,10)}.${row.mime.includes("wav")?"wav":row.mime.includes("mp4")?"m4a":row.mime.includes("mpeg")?"mp3":row.mime.includes("ogg")?"ogg":"webm"}`);else setMessage("本机找不到这段录音文件。结构化记录仍在。 ")}else{await deleteBlob(row.media_ref);await mutateSnapshot(d=>{d.audio=d.audio.filter(a=>a.id!==id);d.notes.forEach(n=>{if(n.media_ref===row.media_ref)n.media_ref=undefined})});await refresh()}};
+  const reset=async()=>{if(!confirmClear){setConfirmClear(true);return}await clearAll();setConfirmClear(false);await refresh();setMessage("本机学习数据已清除，应用已回到初始教材样例。已删除内容无法从应用恢复；可重新导入先前备份。")};
+  return <div className="view-stack records-view">
+    <SectionTitle eyebrow="LEARNING LOG" title={<>真实记录，<span className="green">慢慢积累</span></>}/>
+    <section className="week-report"><Overline>THIS WEEK</Overline><h2>这周练了 {Math.round(seconds/60)} 分钟</h2><p><b>可以独立：</b>{names(independent)}</p><p><b>需要提示：</b>{names(prompted)}</p><p><b>下次再练：</b>{names(misses)}</p><small>这是基于家长确认记录的产品提示，不是英语能力测评分数。</small></section>
+    <section className="backup-card"><div><HardDrive/><div><strong>本机档案与备份</strong><p>{quota?`已用约 ${(quota.usage/1048576).toFixed(1)} MB / 浏览器允许约 ${(quota.quota/1048576).toFixed(0)} MB` : "正在读取浏览器存储空间…"}</p></div></div><p>JSON 备份包含结构化记录，不含录音与教材附件；这些文件请单独下载保存。不同设备不会自动同步。</p><div className="button-row"><button className="button secondary" onClick={exportData}><Download/>下载 JSON 备份</button><label className="button secondary"><Upload/>导入并合并<input type="file" accept="application/json,.json" onChange={e=>void importData(e.target.files?.[0])}/></label></div><ProviderStatus capabilities={capabilities}/></section>
+    <section><SectionTitle title="学习证据" aside={`${snapshot.observations.length} 条`}/>{snapshot.observations.length?<div className="record-list">{[...snapshot.observations].reverse().map(o=>{const skill=snapshot.skills.find(s=>s.id===o.skill_id);return <article key={o.id}><div><StatusPill tone={o.outcome==="independent"?"good":o.outcome==="miss"?"danger":o.outcome==="prompted"?"warm":"neutral"}>{outcomeLabel[o.outcome]}</StatusPill><time>{new Date(o.timestamp).toLocaleString("zh-CN",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"})}</time></div><strong>{skill?.title??"已删除的知识点"}</strong><p>{o.evidence}</p><small>{o.source==="parent_report"?"家长反馈":"孩子互动"} · {o.prompt_shown?"用过提示":"未记录提示"} · {o.answer_revealed?"看过答案":"未看答案"}</small><button className="delete-button" onClick={()=>void removeObservation(o.id)} aria-label="删除这条观察记录"><Trash2/></button></article>})}</div>:<EmptyState title="还没有练习记录">完成一道题或保存一条家长反馈后，会在这里留下可追溯证据。</EmptyState>}</section>
+    {snapshot.notes.length>0&&<section><SectionTitle title="家长原话" aside={`${snapshot.notes.length} 条`}/><div className="record-list note-list">{[...snapshot.notes].reverse().map(n=><article key={n.id}><div><StatusPill>{n.linked_observation_ids.length?`已关联 ${n.linked_observation_ids.length} 条观察`:"待整理原话"}</StatusPill><time>{new Date(n.created_at).toLocaleString("zh-CN",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"})}</time></div><p>{n.raw_text||"仅保存了一段音频，尚未转写。"}</p><small>{n.media_ref?"附有本机录音 · ":""}{n.transcription_status==="manual_required"?"尚未转写/分析":"文字已保留"}</small><button className="delete-button" onClick={()=>void removeNote(n.id)} aria-label="删除这条家长原话"><Trash2/></button></article>)}</div></section>}
+    {snapshot.audio.length>0&&<section><SectionTitle title="本机录音" aside={`${snapshot.audio.length} 段`}/><div className="audio-list">{snapshot.audio.map(a=><div key={a.id}><div><FileJson/><span><strong>{new Date(a.created_at).toLocaleString("zh-CN")}</strong><small>仅保存音频，尚未转写/分析</small></span></div><button onClick={()=>void audioAction(a.id,"download")} aria-label="下载录音"><Download/></button><button onClick={()=>void audioAction(a.id,"delete")} aria-label="删除录音"><Trash2/></button></div>)}</div></section>}
+    <section className="danger-zone"><strong>清除本机学习数据</strong><p>建议先下载 JSON 备份和需要保留的录音。第一次点击会显示确认状态。</p><button className="button danger" onClick={()=>void reset()}><Trash2/>{confirmClear?"再次点击，确认清除":"清除本机数据"}</button>{confirmClear&&<button className="text-button" onClick={()=>setConfirmClear(false)}>取消</button>}</section>
+    {message&&<p className="notice" role="status">{message}</p>}
+  </div>;
+}
