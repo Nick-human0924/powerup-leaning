@@ -17,7 +17,7 @@ SOURCE = ROOT / "imports" / "materials"
 PROCESSED = ROOT / "imports" / "processed"
 PREVIEWS = ROOT / "public" / "textbook-pages"
 MANIFEST = PROCESSED / "textbook-pages.json"
-POPPLER = Path(r"C:\Users\shenkangni\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\poppler\Library\bin\pdftoppm.exe")
+POPPLER = Path.home() / ".cache/codex-runtimes/codex-primary-runtime/dependencies/native/poppler/Library/bin/pdftoppm.exe"
 
 
 def natural_key(path: Path) -> int:

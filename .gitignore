@@ -42,3 +42,6 @@ docs/PM_*.md
 docs/TEST_RESULTS.md
 docs/IMAGEGEN_PROMPTS_V2.json
 next-env.d.ts
+# Internal context and local operating notes are not public documentation.
+docs/*.md
+docs/private/
