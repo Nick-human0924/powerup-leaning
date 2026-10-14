@@ -22,6 +22,7 @@ export function CompanionApp() {
   const [tab, setTab] = useState<TabKey>("home");
   const [practiceMode, setPracticeMode] = useState<PracticeMode>("parent");
   const [minutes, setMinutes] = useState(3);
+  const [today, setToday] = useState("");
   const [state, setState] = useState<SnapshotState>({ status: "loading" });
   const { online, capabilities } = useServiceStatus();
   const refresh = useCallback(async () => {
@@ -30,9 +31,12 @@ export function CompanionApp() {
     catch (error) { setState((current) => current.status === "ready" ? current : { status: "error", message: error instanceof Error ? error.message : "未知错误" }); }
   }, []);
   useEffect(() => { void refresh(); }, [refresh]);
+  useEffect(() => {
+    const update=()=>setToday(new Intl.DateTimeFormat("zh-CN",{month:"numeric",day:"numeric",weekday:"short"}).format(new Date()));
+    update();const timer=setInterval(update,60_000);return()=>clearInterval(timer);
+  },[]);
 
   const begin = (mode: PracticeMode, duration = minutes) => { setPracticeMode(mode); setMinutes(duration); setTab("practice"); };
-  const today = new Intl.DateTimeFormat("zh-CN", { month: "numeric", day: "numeric", weekday: "short" }).format(new Date());
   return (
     <div className="app-shell">
       <header className="masthead"><button className="brand" onClick={() => setTab("home")} aria-label="返回今日"><span className="brand-mark">A</span><strong>{publicDemo?"英语小课堂":"安哲英语"}</strong></button><div className="masthead-meta"><time>{today}</time><OfflineBadge online={online} /></div></header>
