@@ -1,0 +1,259 @@
+{
+  "schema_version": "1.0.0",
+  "materials": [
+    {
+      "id": "DEMO-MATERIAL-INTERACTIVE",
+      "title": "互动演示素材",
+      "level": "公开示例",
+      "edition": "合成内容 v1",
+      "publisher": "Andy English Companion Demo",
+      "created_at": "2026-10-15T00:00:00.000Z",
+      "source_kind": "manual",
+      "review_status": "verified"
+    }
+  ],
+  "assets": [
+    {
+      "id": "DEMO-ASSET-CARD",
+      "material_id": "DEMO-MATERIAL-INTERACTIVE",
+      "filename": "demo-source.svg",
+      "file_hash": "1f0b4bcc1099409017b4e45149803e8b12fab2222ba23390c23061ec742001ee",
+      "mime": "image/svg+xml",
+      "storage_ref": "/powerup-leaning/demo/demo-source.svg",
+      "uploaded_at": "2026-10-15T00:00:00.000Z"
+    }
+  ],
+  "pages": [
+    {
+      "id": "DEMO-PAGE-CARD",
+      "asset_id": "DEMO-ASSET-CARD",
+      "pdf_page_index": null,
+      "printed_page_number": null,
+      "unit_id": "DEMO-UNIT-DAILY",
+      "printed_page_status": "not_present",
+      "ocr_printed_page_candidate": null,
+      "printed_page_evidence": "公开合成卡片没有教材印刷页码。",
+      "page_preview_ref": "/powerup-leaning/demo/demo-source.svg",
+      "ocr_status": "not_needed",
+      "source_confidence": 1,
+      "content_hash": "1f0b4bcc1099409017b4e45149803e8b12fab2222ba23390c23061ec742001ee",
+      "extracted_text": "apple | book | water | Can I have some water, please?"
+    }
+  ],
+  "units": [
+    {
+      "id": "DEMO-UNIT-DAILY",
+      "material_id": "DEMO-MATERIAL-INTERACTIVE",
+      "title": "日常小练习",
+      "printed_page_range": null,
+      "source_page_ids": [
+        "DEMO-PAGE-CARD"
+      ],
+      "review_status": "verified",
+      "order": 0,
+      "reference_outline": {
+        "vocabulary": [
+          "apple",
+          "book",
+          "water"
+        ],
+        "expressions": [
+          "Can I have some water, please?"
+        ],
+        "goal": "用常见词汇完成一个礼貌请求。",
+        "source_ref": "公开合成演示卡片；不对应任何商业教材。"
+      }
+    }
+  ],
+  "sections": [
+    {
+      "id": "DEMO-SECTION-DAILY",
+      "unit_id": "DEMO-UNIT-DAILY",
+      "material_id": "DEMO-MATERIAL-INTERACTIVE",
+      "title": "常见词汇与礼貌请求",
+      "printed_page_range": null,
+      "source_page_ids": [
+        "DEMO-PAGE-CARD"
+      ],
+      "section_type": "synthetic_demo",
+      "review_status": "verified"
+    }
+  ],
+  "skills": [
+    {
+      "id": "DEMO-SKILL-APPLE",
+      "title": "apple",
+      "unit_id": "DEMO-UNIT-DAILY",
+      "type": "vocabulary",
+      "canonical_expression": "apple",
+      "words": [
+        "apple"
+      ],
+      "goal": "用英语说出“苹果”",
+      "source_page_ids": [
+        "DEMO-PAGE-CARD"
+      ],
+      "origin": "source",
+      "review_status": "verified",
+      "version": 1,
+      "source_evidence": "公开合成演示卡：Words 区域的 apple。",
+      "confidence": 1
+    },
+    {
+      "id": "DEMO-SKILL-BOOK",
+      "title": "book",
+      "unit_id": "DEMO-UNIT-DAILY",
+      "type": "vocabulary",
+      "canonical_expression": "book",
+      "words": [
+        "book"
+      ],
+      "goal": "用英语说出“书”",
+      "source_page_ids": [
+        "DEMO-PAGE-CARD"
+      ],
+      "origin": "source",
+      "review_status": "verified",
+      "version": 1,
+      "source_evidence": "公开合成演示卡：Words 区域的 book。",
+      "confidence": 1
+    },
+    {
+      "id": "DEMO-SKILL-WATER",
+      "title": "water",
+      "unit_id": "DEMO-UNIT-DAILY",
+      "type": "vocabulary",
+      "canonical_expression": "water",
+      "words": [
+        "water"
+      ],
+      "goal": "用英语说出“水”",
+      "source_page_ids": [
+        "DEMO-PAGE-CARD"
+      ],
+      "origin": "source",
+      "review_status": "verified",
+      "version": 1,
+      "source_evidence": "公开合成演示卡：Words 区域的 water。",
+      "confidence": 1
+    },
+    {
+      "id": "DEMO-SKILL-REQUEST",
+      "title": "礼貌提出请求",
+      "unit_id": "DEMO-UNIT-DAILY",
+      "type": "target_expression",
+      "canonical_expression": "Can I have some water, please?",
+      "goal": "在日常情境中礼貌请求喝水",
+      "source_page_ids": [
+        "DEMO-PAGE-CARD"
+      ],
+      "origin": "source",
+      "review_status": "verified",
+      "version": 1,
+      "source_evidence": "公开合成演示卡：Polite request 区域。",
+      "confidence": 1
+    }
+  ],
+  "tasks": [
+    {
+      "id": "DEMO-TASK-APPLE",
+      "skill_ids": [
+        "DEMO-SKILL-APPLE"
+      ],
+      "prompt": "What fruit can be red or green and grows on a tree?",
+      "parent_instruction": "直接读英文问题，先让孩子独立回答；不要展示目标单词。",
+      "expected_answers": [
+        "apple"
+      ],
+      "hint_levels": [
+        "It starts with /æ/."
+      ],
+      "scenario": "用英文回答常见水果问题",
+      "estimated_seconds": 45,
+      "origin": "derived",
+      "source_page_ids": [
+        "DEMO-PAGE-CARD"
+      ],
+      "version": 1
+    },
+    {
+      "id": "DEMO-TASK-BOOK",
+      "skill_ids": [
+        "DEMO-SKILL-BOOK"
+      ],
+      "prompt": "What do you open and read when you want a story?",
+      "parent_instruction": "直接读英文问题，先让孩子独立回答；不要展示目标单词。",
+      "expected_answers": [
+        "book"
+      ],
+      "hint_levels": [
+        "It starts with /b/."
+      ],
+      "scenario": "用英文回答常见物品问题",
+      "estimated_seconds": 45,
+      "origin": "derived",
+      "source_page_ids": [
+        "DEMO-PAGE-CARD"
+      ],
+      "version": 1
+    },
+    {
+      "id": "DEMO-TASK-WATER",
+      "skill_ids": [
+        "DEMO-SKILL-WATER"
+      ],
+      "prompt": "What do you drink when you are thirsty?",
+      "parent_instruction": "直接读英文问题，先让孩子独立回答；不要展示目标单词。",
+      "expected_answers": [
+        "water"
+      ],
+      "hint_levels": [
+        "It starts with /w/."
+      ],
+      "scenario": "用英文回答常见饮品问题",
+      "estimated_seconds": 45,
+      "origin": "derived",
+      "source_page_ids": [
+        "DEMO-PAGE-CARD"
+      ],
+      "version": 1
+    },
+    {
+      "id": "DEMO-TASK-REQUEST",
+      "skill_ids": [
+        "DEMO-SKILL-REQUEST"
+      ],
+      "prompt": "You are thirsty after playing outside. Ask politely for a drink.",
+      "parent_instruction": "只读英文情境，不先念目标句；需要时逐级提示。",
+      "expected_answers": [
+        "Can I have some water, please?"
+      ],
+      "hint_levels": [
+        "Can I…",
+        "Can I have some…"
+      ],
+      "scenario": "户外活动后礼貌请求喝水",
+      "estimated_seconds": 45,
+      "origin": "derived",
+      "source_page_ids": [
+        "DEMO-PAGE-CARD"
+      ],
+      "version": 1
+    }
+  ],
+  "lessons": [],
+  "sessions": [],
+  "observations": [],
+  "notes": [],
+  "audio": [],
+  "jobs": [],
+  "audit": [
+    {
+      "id": "public-demo-v1",
+      "timestamp": "2026-10-15T00:00:00.000Z",
+      "action": "synthetic_public_demo_created",
+      "entity_id": "DEMO-MATERIAL-INTERACTIVE",
+      "detail": "Synthetic public demonstration data only; contains no textbook pages, lesson history, observations, notes, or audio."
+    }
+  ]
+}

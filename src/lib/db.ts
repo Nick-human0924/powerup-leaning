@@ -3,6 +3,7 @@ import { CATALOG_REVISION_ID, isSeedCurrent, reconcileSeed } from './catalog';
 import { migrateBackup } from './migrations';
 import { snapshotSchema, validateReferences, type Snapshot } from './schema';
 import { appPath, publicDemo } from './runtime';
+import { isPublicCatalogCurrent, reconcilePublicSeed } from './public-catalog';
 
 type SnapshotRow = { key: 'current'; value: Snapshot };
 type BlobRow = { id: string; blob: Blob };
@@ -49,17 +50,18 @@ async function readOrInitialize(db: CompanionDatabase): Promise<Snapshot> {
   const existing = await db.snapshots.get('current');
   if (existing) {
     const current = validateReferences(existing.value);
-    if (isSeedCurrent(current)) return current;
+    const isCurrent = publicDemo ? isPublicCatalogCurrent : isSeedCurrent;
+    if (isCurrent(current)) return current;
     let seed: Snapshot;
     try { seed = await fetchInitialSeed(); } catch { return current; }
-    // Public checkouts intentionally have no private catalog revision to merge.
-    if (!seed.audit.some(entry=>entry.id===CATALOG_REVISION_ID)) return current;
+    // Local textbook and public original content have separate release markers.
+    if (publicDemo ? !isPublicCatalogCurrent(seed) : !seed.audit.some(entry=>entry.id===CATALOG_REVISION_ID)) return current;
     return db.transaction('rw', db.snapshots, async () => {
       const latestRow = await db.snapshots.get('current');
       if (!latestRow) throw new Error('Snapshot disappeared during catalog reconciliation');
       const latest = validateReferences(latestRow.value);
-      if (isSeedCurrent(latest)) return latest;
-      const upgraded = reconcileSeed(latest, seed);
+      if (isCurrent(latest)) return latest;
+      const upgraded = publicDemo ? reconcilePublicSeed(latest, seed) : reconcileSeed(latest, seed);
       await db.snapshots.put({ key: 'current', value: upgraded });
       return upgraded;
     });

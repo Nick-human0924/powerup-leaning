@@ -32,7 +32,7 @@ export function HomeView({ snapshot, minutes, setMinutes, begin, openMaterials }
         <span className="recommend-label">今日推荐 · {minutes} 分钟</span>
         <h2>{first.skill.goal}</h2>
         <p className="recommend-reason">{first.reason}</p>
-        <button className="recommend-source" onClick={openMaterials} aria-label={`查看教材来源：${material?.title} · ${unit?.title} · ${first.skill.title}`}><span>{material?.title.replace(/^Cambridge\s+/u,"")} · {publicDemo?"演示单元":unit?.order===0?"Hello":unit?.order?`Unit ${unit.order}`:unit?.title}</span><span>{publicDemo?"示例卡片":sourcePages.length ? sourcePages.map(p => p.printed_page_number ? `p.${p.printed_page_number}` : `PDF ${p.pdf_page_index ?? "?"}`).join(" / ") : "来源待核对"}</span><ArrowRight /></button>
+        <button className="recommend-source" onClick={openMaterials} aria-label={`查看教材来源：${material?.title} · ${unit?.title} · ${first.skill.title}`}><span>{material?.title.replace(/^Cambridge\s+/u,"")} · {unit?.order===0?"Hello":unit?.order?`Unit ${unit.order}`:unit?.title}</span><span>{publicDemo?"原创主题练习":sourcePages.length ? sourcePages.map(p => p.printed_page_number ? `p.${p.printed_page_number}` : `PDF ${p.pdf_page_index ?? "?"}`).join(" / ") : "来源待核对"}</span><ArrowRight /></button>
       </div>
     </section> : <div className="home-empty"><EmptyState title="还没有可推荐的练习">发布一个经过核对的知识点后，这里会显示真实推荐。两种练习方式仍可进入查看。</EmptyState><button className="button secondary" onClick={openMaterials}>去教材页查看</button></div>}
     <section className="quick-start">

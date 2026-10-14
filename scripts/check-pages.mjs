@@ -35,7 +35,7 @@ try{
   page.on('request',request=>{if(new URL(request.url()).pathname.includes('/api/'))apiCalls.push(request.url());});
   await page.goto(target);
   await expect(page.getByRole('button',{name:/我带孩子练/})).toBeVisible({timeout:30000});
-  await expect(page.getByRole('note')).toContainText('公开演示');
+  await expect(page.getByRole('note')).toContainText('公开练习');
   await expect(page.locator('.home-view img')).toHaveCount(3);
   for(const img of await page.locator('.home-view img').all())await expect.poll(()=>img.evaluate(el=>el.complete&&el.naturalWidth>0),{timeout:30000}).toBe(true);
   for(const label of [/我带孩子练/,/孩子自己练/]){
@@ -43,7 +43,9 @@ try{
   }
   const seedResponse=await page.request.get(new URL('seed.json',target).href);
   const seed=await seedResponse.json();
-  expect(seed.skills).toHaveLength(4);
+  expect(seed.units).toHaveLength(8);
+  expect(seed.units.map(unit=>unit.order)).toEqual([0,1,2,3,4,5,6,7]);
+  expect(seed.skills.length).toBeGreaterThanOrEqual(64);
   for(const name of ['observations','notes','lessons','audio'])expect(seed[name]).toEqual([]);
   expect(JSON.stringify(seed)).not.toMatch(/Pupil_s Book|textbook-pages|PU1-U4/u);
   await fs.mkdir('docs/pm-review/pages',{recursive:true});
@@ -53,9 +55,25 @@ try{
     await nav().getByRole('button',{name:label,exact:true}).click();
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   }
+  await nav().getByRole('button',{name:'教材',exact:true}).click();
+  await expect(page.locator('.unit-strip button')).toHaveCount(8);
+  await expect(page.locator('.unit-strip button > span')).toHaveText(['H','1','2','3','4','5','6','7']);
+  for(const button of await page.locator('.unit-strip button').all()) await expect(button).toBeInViewport();
+  await page.locator('.unit-strip').screenshot({path:'docs/pm-review/pages/units-375.png'});
+  for(const unit of seed.units){
+    await page.locator('.unit-strip').getByRole('button',{name:unit.title,exact:true}).click();
+    await expect(page.locator('.unit-heading h1')).toHaveText(unit.title);
+    expect(await page.locator('.skill-list details').count()).toBeGreaterThanOrEqual(8);
+  }
   await nav().getByRole('button',{name:'今日',exact:true}).click();
   await page.getByRole('button',{name:/我带孩子练/}).click();
   await expect(page.locator('.task-card')).toBeVisible();
+  for(const unit of seed.units){
+    await page.getByLabel('指定单元').selectOption(unit.id);
+    await expect(page.getByLabel('指定单元')).toHaveValue(unit.id);
+    const task=seed.tasks.find(task=>task.skill_ids.some(id=>seed.skills.some(skill=>skill.id===id&&skill.unit_id===unit.id)));
+    await expect(page.locator('.task-card h1')).toHaveText(task.prompt);
+  }
   await page.getByRole('button',{name:/给一点提示/}).click();
   await page.getByRole('button',{name:/独立说出/}).click();
   await nav().getByRole('button',{name:'记录',exact:true}).click();
@@ -63,8 +81,21 @@ try{
   await page.reload();
   await nav().getByRole('button',{name:'记录',exact:true}).click();
   await expect(page.locator('.record-list .status-pill').filter({hasText:'提示后说出'})).toHaveCount(1);
+  // Simulate a returning visitor with the actual v1 IDs in this isolated archive.
+  const legacy=JSON.parse(await fs.readFile(new URL('../tests/fixtures/public-demo-v1.json',import.meta.url),'utf8'));
+  legacy.observations=[{id:'returning-visitor-record',skill_id:'DEMO-SKILL-WATER',outcome:'prompted',evidence:'旧版提示后回答，保留原话',source:'parent_report',prompt_shown:true,answer_revealed:false,confidence:1,verified_by_parent:true,timestamp:'2026-10-15T00:00:00.000Z'}];
+  await page.evaluate(snapshot=>new Promise((resolve,reject)=>{
+    const open=indexedDB.open('english-companion-public-demo');
+    open.onerror=()=>reject(open.error);
+    open.onsuccess=()=>{const db=open.result;const tx=db.transaction('snapshots','readwrite');tx.objectStore('snapshots').put({key:'current',value:snapshot});tx.oncomplete=()=>{db.close();resolve(true);};tx.onerror=()=>reject(tx.error);};
+  }),legacy);
+  await page.reload();
+  await nav().getByRole('button',{name:'教材',exact:true}).click();
+  await expect(page.locator('.unit-strip button')).toHaveCount(8);
+  await nav().getByRole('button',{name:'记录',exact:true}).click();
+  await expect(page.locator('.record-list')).toContainText('旧版提示后回答，保留原话');
   expect(errors).toEqual([]);expect(apiCalls).toEqual([]);
-  console.log(JSON.stringify({url:target,views:5,images:3,syntheticSkills:4,preservedHintedEvidence:true,noBackendRequests:true,passed:true}));
+  console.log(JSON.stringify({url:target,views:5,images:3,units:8,originalSkills:seed.skills.length,allUnitsPlayable:true,returningVisitorUpgrade:true,preservedHintedEvidence:true,noBackendRequests:true,passed:true}));
 }finally{
   await browser.close();
   if(server)await new Promise(resolve=>server.close(resolve));

@@ -14,7 +14,7 @@ pnpm run setup
 pnpm dev --port 3001
 ```
 
-打开 http://localhost:3001 。公开演示使用示例内容，与本机资料独立。
+打开 http://localhost:3001 。公开演示包含 Hello 与 Unit 1–7 的原创主题练习，与本机私人教材库独立；旧版访问者刷新即可补齐单元，已有记录保留。
 
 ## 数据保护
 

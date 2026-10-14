@@ -94,6 +94,7 @@ async function assertPublicAllowlist(targetRoot) {
   const publicRoot = path.join(targetRoot, 'public');
   const allowed = new Set([
     'demo/demo-source.svg',
+    'demo/curriculum.svg',
     'icon-192.png',
     'icon-512.png',
     'icon.svg',

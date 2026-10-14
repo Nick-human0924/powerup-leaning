@@ -41,7 +41,7 @@ export function CompanionApp() {
     <div className="app-shell">
       <header className="masthead"><button className="brand" onClick={() => setTab("home")} aria-label="返回今日"><span className="brand-mark">A</span><strong>{publicDemo?"英语小课堂":"安哲英语"}</strong></button><div className="masthead-meta"><time>{today}</time><OfflineBadge online={online} /></div></header>
       <main className="app-main">
-        {publicDemo && <p className="public-demo-note" role="note">公开演示 · 使用示例内容，记录仅存于当前浏览器</p>}
+        {publicDemo && <p className="public-demo-note" role="note">公开练习 · 原创主题内容，非教材原页；记录仅存于当前浏览器</p>}
         {state.status === "loading" && <LoadingState />}
         {state.status === "error" && <ErrorState message={state.message} retry={refresh} />}
         {state.status === "ready" && <>
