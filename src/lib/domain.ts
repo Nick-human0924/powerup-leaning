@@ -1,4 +1,5 @@
 import { Observation, PracticeTask, type Skill, type Snapshot } from './schema';
+import { publicDemo } from './runtime';
 
 export function makeId(prefix = 'id'): string {
   const uuid = globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
@@ -63,15 +64,15 @@ export function generateTasks(skill: Skill): PracticeTask[] {
   let expectedAnswers = [expression];
   let parentInstruction = '先描述情境，不展示参考答案；需要时再逐级给提示。';
   if (/^do you like\b/.test(canonical)) {
-    prompt = '家长问一个真实的喜好问题，让安哲按自己的想法回答。';
+    prompt = publicDemo?'家长问一个真实的喜好问题，让孩子按自己的想法回答。':'家长问一个真实的喜好问题，让安哲按自己的想法回答。';
     expectedAnswers = ['Yes, I do.', 'No, I don’t.'];
     parentInstruction = '先选一种熟悉的食物，用 Do you like…? 提问；不要先说参考回答。';
   } else if (/^would you like\b/.test(canonical)) {
-    prompt = '家长提供一种食物，让安哲礼貌接受或拒绝。';
+    prompt = publicDemo?'家长提供一种食物，让孩子礼貌接受或拒绝。':'家长提供一种食物，让安哲礼貌接受或拒绝。';
     expectedAnswers = ['Yes, please.', 'No, thank you.'];
     parentInstruction = '用 Would you like…? 提问；接受或拒绝都可以，不要先说参考回答。';
   } else if (/^can i have\b/.test(canonical)) {
-    prompt = '情境：安哲想要一样食物或饮品，请他礼貌开口请求。';
+    prompt = publicDemo?'情境：孩子想要一样食物或饮品，请他礼貌开口请求。':'情境：安哲想要一样食物或饮品，请他礼貌开口请求。';
     parentInstruction = '只交代想要什么，不直接念出目标英语句。';
   }
   return [PracticeTask.parse({

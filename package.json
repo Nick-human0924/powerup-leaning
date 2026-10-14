@@ -15,7 +15,8 @@
     "test:e2e": "playwright test",
     "pretypecheck": "node scripts/bootstrap.mjs",
     "typecheck": "tsc --noEmit",
-    "prepare:reference": "node scripts/extract-reference.mjs && node scripts/prepare-seed.mjs && node scripts/prepare-worker.mjs"
+    "prepare:reference": "node scripts/extract-reference.mjs && node scripts/prepare-seed.mjs && node scripts/prepare-worker.mjs",
+    "build:pages": "node scripts/build-pages.mjs"
   },
   "dependencies": {
     "next": "^15.5.0",

@@ -2,6 +2,8 @@
 
 手机优先的英语复习工具，支持练习、教材导入和本地学习记录。
 
+**在线演示：[直接打开界面](https://nick-human0924.github.io/powerup-leaning/)**
+
 ## 本地运行
 
 需要 Node.js 22+ 和 pnpm。
@@ -12,7 +14,7 @@ pnpm run setup
 pnpm dev --port 3001
 ```
 
-打开 http://localhost:3001 。当前仓库不提供公网演示站点。
+打开 http://localhost:3001 。公开演示使用示例内容，与本机资料独立。
 
 ## 数据保护
 

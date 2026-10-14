@@ -9,6 +9,7 @@ import { recommend } from "@/lib/recommendations";
 import type { PracticeMode } from "./types";
 import { DurationPicker } from "./HomeView";
 import { EmptyState, Overline, StatusPill } from "./ui";
+import { publicDemo } from "@/lib/runtime";
 
 type SpeechRecognitionCtor = new () => { lang: string; interimResults: boolean; start():void; stop():void; onresult:((e:{results:ArrayLike<{0:{transcript:string}}>} )=>void)|null; onerror:((e:{error:string})=>void)|null; onend:(()=>void)|null };
 
@@ -87,7 +88,7 @@ export function PracticeView({ snapshot, refresh, mode, setMode, minutes, setMin
     <div className="practice-pickers"><label>指定单元<select value={skill?.unit_id??""} onChange={e=>{const first=availableTasks.find(t=>t.skill_ids.some(id=>snapshot.skills.find(s=>s.id===id)?.unit_id===e.target.value));if(first)selectTask(first.id)}}>{snapshot.units.filter(u=>snapshot.tasks.some(t=>t.skill_ids.some(id=>snapshot.skills.find(s=>s.id===id)?.unit_id===u.id))).map(u=><option key={u.id} value={u.id}>{u.title}</option>)}</select></label><label>换一道题<select value={task?.id??""} onChange={e=>selectTask(e.target.value)}>{availableTasks.map(t=><option key={t.id} value={t.id}>{snapshot.skills.find(s=>t.skill_ids.includes(s.id))?.goal??t.scenario}</option>)}</select></label></div>
     <div className="practice-progress"><div>{queue.map((_,i) => <i key={i} className={i <= index ? "done" : ""} />)}</div><span>{index + 1} / {queue.length}</span></div>
     <article className="task-card">
-      <div className="task-meta"><Overline>{mode === "parent" ? "先让安哲自己想" : "ONE QUESTION"}</Overline><StatusPill>{task.origin === "derived" ? "基于教材的练习" : "教材练习"} · {taskPages.map(p=>p.printed_page_number?`p.${p.printed_page_number}`:"页码未知").join(" / ")}</StatusPill></div>
+      <div className="task-meta"><Overline>{mode === "parent" ? (publicDemo?"先让孩子自己想":"先让安哲自己想") : "ONE QUESTION"}</Overline><StatusPill>{task.origin === "derived" ? "基于教材的练习" : "教材练习"} · {taskPages.map(p=>p.printed_page_number?`p.${p.printed_page_number}`:"页码未知").join(" / ")}</StatusPill></div>
       <p className="scenario">{task.scenario}</p><h1>{questionForTask(task,skill)}</h1>
       {questionForTask(task,skill)!==task.prompt&&<p className="instruction">情境：{task.prompt.replace(/^(?:生活)?情境：/u,"")}</p>}
       {mode === "parent" ? <p className="instruction">给家长：{task.parent_instruction}</p> : <button className="listen-button" onClick={speak}><Volume2 /> 听题</button>}
@@ -96,7 +97,7 @@ export function PracticeView({ snapshot, refresh, mode, setMode, minutes, setMin
       {revealed && <div className="answer-panel reveal"><small>参考表达已显示 · 不再记为独立</small>{task.expected_answers.map((x) => <p key={x}>{x}</p>)}</div>}
     </article>
     {mode === "child" && <section className="child-answer"><label htmlFor="child-answer">把听到的回答写下来</label><div className="answer-input"><input id="child-answer" value={typed} onChange={(e)=>setTyped(e.target.value)} placeholder="Type your answer…" /><button className={listening ? "recording" : ""} onClick={listen} aria-label="用语音输入">{listening ? <Square /> : <Mic />}</button></div><label className="check-row"><input type="checkbox" checked={speechConsent} onChange={e=>setSpeechConsent(e.target.checked)} />我知道浏览器语音识别可能使用在线服务，并同意这次使用</label><p>文字或转写只是回答证据，不会自动判断对错。请由家长核对后评分。</p></section>}
-    <section className="grading"><strong>{mode === "child" ? "请家长核对这次回答" : "安哲刚才表现怎样？"}</strong><div className="grade-grid"><button disabled={saving} onClick={()=>void grade("independent")}><Check />独立说出</button><button disabled={saving} onClick={()=>void grade("prompted")}><Lightbulb />提示后说出</button><button disabled={saving} onClick={()=>void grade("miss")}>○ 暂时不会</button><button disabled={saving} onClick={()=>void grade("not_tested")}>— 未测</button></div></section>
+    <section className="grading"><strong>{mode === "child" ? "请家长核对这次回答" : (publicDemo?"孩子刚才表现怎样？":"安哲刚才表现怎样？")}</strong><div className="grade-grid"><button disabled={saving} onClick={()=>void grade("independent")}><Check />独立说出</button><button disabled={saving} onClick={()=>void grade("prompted")}><Lightbulb />提示后说出</button><button disabled={saving} onClick={()=>void grade("miss")}>○ 暂时不会</button><button disabled={saving} onClick={()=>void grade("not_tested")}>— 未测</button></div></section>
     {message && <p className="inline-message" role="status">{message}</p>}
   </div>;
 }

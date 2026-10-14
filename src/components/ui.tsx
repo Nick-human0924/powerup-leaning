@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { AlertCircle, LoaderCircle } from "lucide-react";
+import { publicDemo } from "@/lib/runtime";
 
 export function Overline({ children }: { children: ReactNode }) {
   const labels: Record<string, string> = {
@@ -27,7 +28,7 @@ export function EmptyState({ title, children }: { title: string; children: React
 }
 
 export function LoadingState() {
-  return <div className="state-card" role="status"><LoaderCircle className="spin" />正在打开安哲的学习档案…</div>;
+  return <div className="state-card" role="status"><LoaderCircle className="spin" />{publicDemo?"正在打开演示档案…":"正在打开安哲的学习档案…"}</div>;
 }
 
 export function ErrorState({ message, retry }: { message: string; retry: () => void }) {

@@ -2,6 +2,7 @@ import Dexie, { type EntityTable } from 'dexie';
 import { CATALOG_REVISION_ID, isSeedCurrent, reconcileSeed } from './catalog';
 import { migrateBackup } from './migrations';
 import { snapshotSchema, validateReferences, type Snapshot } from './schema';
+import { appPath, publicDemo } from './runtime';
 
 type SnapshotRow = { key: 'current'; value: Snapshot };
 type BlobRow = { id: string; blob: Blob };
@@ -10,7 +11,7 @@ class CompanionDatabase extends Dexie {
   snapshots!: EntityTable<SnapshotRow, 'key'>;
   blobs!: EntityTable<BlobRow, 'id'>;
   constructor() {
-    super('andy-english-companion');
+    super(publicDemo ? 'english-companion-public-demo' : 'andy-english-companion');
     this.version(1).stores({ snapshots: '&key', blobs: '&id' });
   }
 }
@@ -33,7 +34,7 @@ function serialized<T>(operation: () => Promise<T>): Promise<T> {
 
 async function fetchInitialSeed(): Promise<Snapshot> {
   initialSeedRequest ??= (async () => {
-    const response = await fetch('/seed.json', { cache: 'no-store' });
+    const response = await fetch(appPath('/seed.json'), { cache: 'no-store' });
     if (!response.ok) throw new Error(`Initial learning data could not be loaded (${response.status}).`);
     let input: unknown;
     try { input = await response.json(); } catch { throw new Error('Initial learning data is not valid JSON.'); }

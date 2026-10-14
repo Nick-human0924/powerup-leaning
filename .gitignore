@@ -45,3 +45,4 @@ next-env.d.ts
 # Internal context and local operating notes are not public documentation.
 docs/*.md
 docs/private/
+pages-out/

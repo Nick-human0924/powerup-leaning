@@ -11,6 +11,7 @@ import { RecordsView } from "./RecordsView";
 import { ErrorState, LoadingState } from "./ui";
 import { OfflineBadge, useServiceStatus } from "./ServiceStatus";
 import type { PracticeMode, SnapshotState, TabKey } from "./types";
+import { publicDemo } from "@/lib/runtime";
 
 const tabs = [
   ["home", "今日", Home], ["materials", "教材", BookOpen], ["practice", "练习", Play],
@@ -34,8 +35,9 @@ export function CompanionApp() {
   const today = new Intl.DateTimeFormat("zh-CN", { month: "numeric", day: "numeric", weekday: "short" }).format(new Date());
   return (
     <div className="app-shell">
-      <header className="masthead"><button className="brand" onClick={() => setTab("home")} aria-label="返回今日"><span className="brand-mark">A</span><strong>安哲英语</strong></button><div className="masthead-meta"><time>{today}</time><OfflineBadge online={online} /></div></header>
+      <header className="masthead"><button className="brand" onClick={() => setTab("home")} aria-label="返回今日"><span className="brand-mark">A</span><strong>{publicDemo?"英语小课堂":"安哲英语"}</strong></button><div className="masthead-meta"><time>{today}</time><OfflineBadge online={online} /></div></header>
       <main className="app-main">
+        {publicDemo && <p className="public-demo-note" role="note">公开演示 · 使用示例内容，记录仅存于当前浏览器</p>}
         {state.status === "loading" && <LoadingState />}
         {state.status === "error" && <ErrorState message={state.message} retry={refresh} />}
         {state.status === "ready" && <>

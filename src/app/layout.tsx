@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { appPath, publicDemo } from "@/lib/runtime";
 
 export const metadata: Metadata = {
-  title: "安哲英语",
+  title: publicDemo ? "英语小课堂 · 公开演示" : "安哲英语",
   description: "教材可追溯、练习有证据的英语复习助手",
-  manifest: "/manifest.webmanifest",
+  manifest: appPath("/manifest.webmanifest"),
 };
 
 export const viewport: Viewport = {

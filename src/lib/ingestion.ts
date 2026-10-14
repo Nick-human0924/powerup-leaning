@@ -2,6 +2,7 @@ import type { Snapshot, SourceAsset, SourcePage, ImportJob, Skill, Material, Uni
 import { saveBlob, getBlob } from './db';
 import { generateTasks, makeId } from './domain';
 import { z } from 'zod';
+import { appPath } from './runtime';
 
 const normalize=(s:string)=>s.normalize('NFKC').trim().toLowerCase().replace(/\s+/g,' ');
 export function stableId(prefix:string,...parts:string[]):string {
@@ -32,7 +33,7 @@ export async function inspectFiles(files:File[],snapshot:Snapshot,onProgress:(jo
       const assetId=`asset_${hash}`;const asset={id:assetId,material_id:'pending',filename:file.name,file_hash:hash,mime:file.type||(/\.pdf$/i.test(file.name)?'application/pdf':'image/jpeg'),storage_ref:assetId,uploaded_at:now} as SourceAsset;
       await saveBlob(assetId,file);job.asset_ids=[assetId];result.assets.push(asset);
       if(asset.mime==='application/pdf'){
-        const pdfjs=await import('pdfjs-dist');pdfjs.GlobalWorkerOptions.workerSrc='/pdf.worker.min.mjs';
+        const pdfjs=await import('pdfjs-dist');pdfjs.GlobalWorkerOptions.workerSrc=appPath('/pdf.worker.min.mjs');
         const loading=pdfjs.getDocument({data:new Uint8Array(await file.arrayBuffer())});
         const onAbort=()=>{void loading.destroy();};signal?.addEventListener('abort',onAbort,{once:true});
         try{const pdf=await loading.promise;
@@ -119,4 +120,4 @@ export function publishImport(s:Snapshot,input:PublishInput):void {
   s.audit.push({id:makeId('audit'),timestamp:now,action:'material_publish',entity_id:actualMid,detail:`已核对 ${entries.length} 项；新增 ${created.length} 项；历史观察保留`});
 }
 
-export async function previewUrl(ref?:string|null):Promise<string|undefined>{if(!ref)return undefined;if(ref.startsWith('/'))return ref;const blob=await getBlob(ref);return blob?URL.createObjectURL(blob):undefined;}
+export async function previewUrl(ref?:string|null):Promise<string|undefined>{if(!ref)return undefined;if(ref.startsWith('/'))return appPath(ref);const blob=await getBlob(ref);return blob?URL.createObjectURL(blob):undefined;}

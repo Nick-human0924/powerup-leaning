@@ -4,7 +4,7 @@ import ts from 'typescript';
 import { createRequire } from 'node:module';
 const seed=JSON.parse(fs.readFileSync('schemas/initial-reference.json','utf8'));
 fs.mkdirSync('tmp/seed-build',{recursive:true});
-for(const name of ['schema','domain'])fs.writeFileSync(`tmp/seed-build/${name}.js`,ts.transpileModule(fs.readFileSync(`src/lib/${name}.ts`,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText);
+for(const name of ['schema','runtime','domain'])fs.writeFileSync(`tmp/seed-build/${name}.js`,ts.transpileModule(fs.readFileSync(`src/lib/${name}.ts`,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText);
 const require=createRequire(import.meta.url);
 const {generateTasks}=require('../tmp/seed-build/domain.js');
 for(const skill of seed.skills)if(!seed.tasks.some(t=>t.skill_ids.includes(skill.id)))seed.tasks.push(...generateTasks(skill));

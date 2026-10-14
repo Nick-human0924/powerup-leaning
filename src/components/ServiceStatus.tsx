@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { CloudOff, WifiOff } from "lucide-react";
 import type { Capabilities } from "./types";
+import { appPath, publicDemo } from "@/lib/runtime";
 
 export function useServiceStatus() {
   const [online, setOnline] = useState(true);
@@ -11,8 +12,9 @@ export function useServiceStatus() {
     setOnline(navigator.onLine);
     const on = () => setOnline(true), off = () => setOnline(false);
     window.addEventListener("online", on); window.addEventListener("offline", off);
-    fetch("/api/capabilities").then((r) => r.ok ? r.json() : null).then(setCapabilities).catch(() => setCapabilities(null));
-    if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+    if(publicDemo)setCapabilities({vision:false,structuring:false,asr:false,tts:false});
+    else fetch(appPath("/api/capabilities")).then((r) => r.ok ? r.json() : null).then(setCapabilities).catch(() => setCapabilities(null));
+    if (!publicDemo && "serviceWorker" in navigator) navigator.serviceWorker.register(appPath("/sw.js")).catch(() => undefined);
     return () => { window.removeEventListener("online", on); window.removeEventListener("offline", off); };
   }, []);
   return { online, capabilities };
